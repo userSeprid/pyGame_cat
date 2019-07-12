@@ -1,4 +1,5 @@
 import pygame
+from pygame_functions import *
 pygame.init()
 
 DISPLAYSURF = pygame.display.set_mode((500, 500))
@@ -16,7 +17,7 @@ minX = 0
 maxX = 440
 minY = 0
 maxY = 420
-jump_count = 10
+jump_count = 8
 anim_count = 0
 facing = 1
 
@@ -36,6 +37,8 @@ lastMove = "right"
 
 bullets = []
 
+bgX = 0
+bgX2 = bg.get_width()
 
 class Bullet:
     def __init__(self, bullet_x_pos, bullet_y_pos, radius, color, facing_direction):
@@ -50,16 +53,32 @@ class Bullet:
         display_surface.blit(bulletImage, (self.x, self.y - 10))
         # pygame.draw.circle(display_surface, self.color, (self.x, self.y), self.radius)
 
+    @staticmethod
+    def handle_bullet(bullets_array):
+        for bullet in bullets_array:
+            if 500 > bullet.x > 0:
+                bullet.x += bullet.vel
+            else:
+                bullets_array.pop(bullets_array.index(bullet))
+
 
 pygame.display.set_caption("Base frame")
 
 
 def draw_window():
     global anim_count
-    DISPLAYSURF.blit(bg, (0, 0))
+    # DISPLAYSURF.blit(bg, (0, 0))
+
+    DISPLAYSURF.blit(bg, (bgX, 0))  # draws our first bg image
+    DISPLAYSURF.blit(bg, (bgX2, 0))  # draws the seconf bg image
+    pygame.display.update()  # updates the screen
 
     if anim_count + 1 >= 30:
         anim_count = 0
+
+
+
+
 
     if left:
         DISPLAYSURF.blit(walkLeft[anim_count // 5], (x, y))
@@ -101,7 +120,7 @@ def process_jump_keys_pressed():
         if keys[pygame.K_SPACE]:
             is_jump = True
     else:
-        if jump_count >= -10:
+        if jump_count >= -8:
             if jump_count < 0:
                 y += int((jump_count ** 2) / 2)
             else:
@@ -109,7 +128,19 @@ def process_jump_keys_pressed():
             jump_count -= 1
         else:
             is_jump = False
-            jump_count = 10
+            jump_count = 8
+
+
+def process_attack_keys_pressed():
+    global lastMove, facing, bullets
+    if keys[pygame.K_f]:
+        if lastMove == "right":
+            facing = 1
+        else:
+            facing = -1
+
+        if len(bullets) < 1:
+            bullets.append(Bullet(x + width // 2, y + height // 2, 5, (150, 50, 0), facing))
 
 
 # !!!!!!!!!!!!!!!!!!!!!!
@@ -120,33 +151,31 @@ while run:
     # Definition of game FPS
     pygame.time.delay(FPS)
 
+    bgX -= 1.4  # Move both background images back
+    bgX2 -= 1.4
+
+    if bgX < bg.get_width() * -1:  # If our bg is at the -width then reset its position
+        bgX = bg.get_width()
+
+    if bgX2 < bg.get_width() * -1:
+        bgX2 = bg.get_width()
+
     # Handling exit from the game
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
 
-    for bullet in bullets:
-        if 500 > bullet.x > 0:
-            bullet.x += bullet.vel
-        else:
-            bullets.pop(bullets.index(bullet))
+    # Handle each bullet
+    Bullet.handle_bullet(bullets)
 
     # Collect all pressed keys
     keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_f]:
-        if lastMove == "right":
-            facing = 1
-        else:
-            facing = -1
-
-        if len(bullets) < 1:
-            bullets.append(Bullet(x + width // 2, y + height // 2, 5, (150, 50, 0), facing))
-
+    # Process all pressed keys
+    process_attack_keys_pressed()
     process_movement_keys_pressed()
     process_jump_keys_pressed()
 
-
+    # Draw scene
     draw_window()
 # !!!!!!!!!!!!!!!!!!!!!!
 #  Game main loop end
