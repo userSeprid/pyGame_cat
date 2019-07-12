@@ -8,7 +8,7 @@ run = True
 is_jump = False
 left = False
 right = False
-x = 65
+x = 100
 y = 420
 width = 60
 height = 71
@@ -40,6 +40,7 @@ bullets = []
 bgX = 0
 bgX2 = bg.get_width()
 
+
 class Bullet:
     def __init__(self, bullet_x_pos, bullet_y_pos, radius, color, facing_direction):
         self.x = bullet_x_pos
@@ -62,6 +63,17 @@ class Bullet:
                 bullets_array.pop(bullets_array.index(bullet))
 
 
+class Platform:
+    def __init__(self, platform_x_pos, platform_y_pos, platform_width, platform_height):
+        self.x = platform_x_pos
+        self.y = platform_y_pos
+        self.width = platform_width
+        self.height = platform_height
+
+    def draw(self, display_surface):
+        pygame.draw.line(display_surface, (3, 252, 28), self.x, self.y, self.height)
+
+
 pygame.display.set_caption("Base frame")
 
 
@@ -76,10 +88,6 @@ def draw_window():
     if anim_count + 1 >= 30:
         anim_count = 0
 
-
-
-
-
     if left:
         DISPLAYSURF.blit(walkLeft[anim_count // 5], (x, y))
         anim_count += 1
@@ -91,6 +99,9 @@ def draw_window():
 
     for bullet in bullets:
         bullet.draw(DISPLAYSURF)
+
+    platf = Platform((200, 400), (300, 400), 100, 5)
+    platf.draw(DISPLAYSURF)
 
     pygame.display.update()
 
