@@ -36,6 +36,7 @@ clock = pygame.time.Clock()
 lastMove = "right"
 
 bullets = []
+platforms = []
 
 bgX = 0
 bgX2 = bg.get_width()
@@ -69,9 +70,22 @@ class Platform:
         self.y = platform_y_pos
         self.width = platform_width
         self.height = platform_height
+        self.vel = -1
 
     def draw(self, display_surface):
-        pygame.draw.line(display_surface, (3, 252, 28), self.x, self.y, self.height)
+        pygame.draw.line(display_surface, (3, 252, 28), (self.x, self.y), (self.x + self.width, self.y), self.height)
+
+    @staticmethod
+    def handle_platform(platforms_array):
+        for platform in platforms_array:
+            if 500 > platform.x > 0:
+                platform.x += platform.vel
+                platform.y += platform.vel
+            else:
+                platforms_array.pop(platforms_array.index(platform))
+
+
+platforms.append(Platform(200, 400, 100, 5))
 
 
 pygame.display.set_caption("Base frame")
@@ -100,12 +114,13 @@ def draw_window():
     for bullet in bullets:
         bullet.draw(DISPLAYSURF)
 
-    platf = Platform((200, 400), (300, 400), 100, 5)
-    platf.draw(DISPLAYSURF)
+    for platform in platforms:
+        platform.draw(DISPLAYSURF)
 
     pygame.display.update()
 
 
+# Movement keys processing logic
 def process_movement_keys_pressed():
     global x, left, right, lastMove, anim_count
     if keys[pygame.K_LEFT] and x > minX:
@@ -124,6 +139,7 @@ def process_movement_keys_pressed():
         anim_count = 0
 
 
+# Jump key processing logic
 def process_jump_keys_pressed():
     global is_jump, jump_count, y
 
@@ -142,6 +158,7 @@ def process_jump_keys_pressed():
             jump_count = 8
 
 
+# Attack key processing logic
 def process_attack_keys_pressed():
     global lastMove, facing, bullets
     if keys[pygame.K_f]:
@@ -178,6 +195,8 @@ while run:
 
     # Handle each bullet
     Bullet.handle_bullet(bullets)
+
+    Platform.handle_platform(platforms)
 
     # Collect all pressed keys
     keys = pygame.key.get_pressed()
